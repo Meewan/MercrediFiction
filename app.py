@@ -14,7 +14,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 if not environ.get('MercredifictionCrawler'):
-    from models import Toot, Telemetry, save
+    from models import Toot, Account, Telemetry, save
 
 
 def telemetry(function):
@@ -35,6 +35,10 @@ def show_entries():
     offset = page * limit
 
     toots = Toot.query
+    if 'author' in request.args:
+        toots = toots.join(Account, Toot.account)
+        toots = toots.filter(Account.username == request.args.get('author'))
+
     toots = toots.order_by(desc(Toot.creation_date))
     toots = toots.offset(offset).limit(limit)
     toots_count = toots.count()
