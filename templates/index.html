@@ -26,6 +26,7 @@
       min-height:125px;
       background-repeat: no-repeat;
       background-position:8px 3px;
+      background-size: 120px;
     }
     .toot{
       min-height: 121px;
@@ -54,10 +55,75 @@
     .next{
       margin-left:20px;
     }
+    .header{
+      width:800px;
+      height:75px;
+      margin: auto;
+    }
+    .search{
+      display:inline-block;
+    }
+    .search-author{
+       width:220px;
+    }
+    .instance{
+      width:150px;
+      margin-left:20px;
+    }
+    .search-content{
+      margin-left:20px;
+    }
+    .search-limit{
+      width:40px;
+      margin:10px;
+    }
+    .search input{
+      width:100%;
+    }
   </style>
 </head>
 <body>
+  <div class="header">
+    <form method="GET" action="/">
+      <div class="search search-author">
+        <label for="author"> Auteur </label>
+        <input name="author" list="author" autocomplete="off"/>
+        <datalist id="author">
+          {% for account in accounts %}
+            <option value="{{ account.username }}"/>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="search instance">
+        <label for="instance">Instance</label>
+        <input name="instance" list="instance" autocomplete="off"/>
+        <datalist id="instance">
+          {% for instance in instances %}
+            <option value="{{ instance.domain }}"/>
+          {% endfor %}
+        </datalist>
+      </div>
+      <div class="search search-content">
+        <label for="search">Contenu</label>
+        <input name="search"/>
+      </div>
+      <div class="search search-limit">
+        <label for="limit">Nombre</label>
+        <input type="number" name="limit" value="{{pagination.limit}}"/>
+      </div>
+      <input type="submit" value="Chercher">
+    </form>
+  </div>
   <div class=page>
+    <div class="navigation">
+      {% if pagination.previous %}
+        <span class="previous"><a href="{{ pagination.previous|safe }}">← Précédent</a></span>
+      {% endif %}
+      {{ pagination.page }} / {{ pagination.page_count }}
+      {% if pagination.next %}
+        <span class="next"><a href="{{ pagination.next|safe }}">Suivant →</a></span>
+      {% endif %}
+    </div>
     {% for toot in toots %}
       <div class="toot">
         <div class="right" data-link="{{toot.url}}" style="background-image:url({{toot.account.avatar}})">
@@ -83,7 +149,7 @@
       {% if pagination.previous %}
         <span class="previous"><a href="{{ pagination.previous|safe }}">← Précédent</a></span>
       {% endif %}
-      {{pagination.page}}
+      {{ pagination.page }} / {{ pagination.page_count }}
       {% if pagination.next %}
         <span class="next"><a href="{{ pagination.next|safe }}">Suivant →</a></span>
       {% endif %}

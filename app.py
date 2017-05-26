@@ -34,9 +34,12 @@ def show_entries():
     limit = int(request.args.get("limit", "10"))
     offset = page * limit
 
-    toots, count = get_toots(offset, limit)
+    toots, count, count_all = get_toots(offset, limit)
+    accounts = Account.query.order_by(Account.username).all()
+    instances = Instance.query.order_by(Instance.domain).all()
 
-    pagination = {'page': page + 1}
+    pagination = {'page': page + 1,
+                  'limit': limit}
     pagination['next'] = "/?page=%s&" % (page + 1)
     pagination['previous'] = "/?page=%s&" % (page - 1)
     for key, value in request.args.iteritems():
@@ -49,40 +52,47 @@ def show_entries():
     if page == 0:
         pagination.pop('previous')
 
-    return render_template('index.html', toots=toots, pagination=pagination)
+    pagination['page_count'] = int(count_all / limit) + 1
+
+    return render_template('index.html',
+                           toots=toots,
+                           accounts=accounts,
+                           instances=instances,
+                           pagination=pagination)
 
 
 def get_toots(offset, limit):
     toots = Toot.query
-    if 'author' in request.args:
+    if request.args.get('author', None):
         toots = toots.join(Account, Toot.account)
         toots = toots.filter(Account.username == request.args.get('author'))
 
-    if 'instance' in request.args:
+    if request.args.get('instance', None):
         toots = toots.join(Instance, Toot.instance)
         toots = toots.filter(Instance.domain == request.args.get('instance'))
 
-    if 'from_date' in request.args:
+    if request.args.get('from_date', None):
         try:
             date = datetime.strptime(request.args.get('from_date'), "%Y%m%d")
             toots = toots.filter(Toot.creation_date >= date)
         except ValueError:
             pass
 
-    if 'to_date' in request.args:
+    if request.args.get('to_date', None):
         try:
             date = datetime.strptime(request.args.get('to_date'), "%Y%m%d")
             toots = toots.filter(Toot.creation_date <= date)
         except ValueError:
             pass
 
-    if 'search' in request.args:
+    if request.args.get('search'):
         search_string = "%" + request.args.get("search") + "%"
         toots = toots.filter(Toot.content.like(search_string))
 
     toots = toots.order_by(desc(Toot.creation_date))
+    count_all = toots.count()
     toots = toots.offset(offset).limit(limit)
     count = toots.count()
     toots = toots.all()
 
-    return toots, count
+    return toots, count, count_all
