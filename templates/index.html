@@ -81,12 +81,22 @@
     {% endfor %}
     <div class="navigation">
       {% if pagination.previous %}
-        <span class="previous"><a href="{{ pagination.previous }}">← Précédent</a></span>
+        <span class="previous"><a href="{{ pagination.previous|safe }}">← Précédent</a></span>
       {% endif %}
       {{pagination.page}}
       {% if pagination.next %}
-        <span class="next"><a href="{{ pagination.next }}">Suivant →</a></span>
+        <span class="next"><a href="{{ pagination.next|safe }}">Suivant →</a></span>
       {% endif %}
     </div>
   </div>
+  <script>
+    document.onkeydown = function(event){
+      if(event.keyCode === 37){
+        window.location = "{{ pagination.previous|safe }}";
+      }
+      else if(event.keyCode === 39){
+        window.location = "{{ pagination.next|safe }}";
+      }
+    };
+  </script>
 </body>
