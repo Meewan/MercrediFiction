@@ -1,3 +1,4 @@
+import re
 import json
 from os import environ
 from datetime import datetime
@@ -6,6 +7,7 @@ from threading import Thread
 
 import requests
 from requests.exceptions import ConnectionError, Timeout
+from html2text import HTML2Text
 from sqlalchemy import desc
 
 environ['MercredifictionCrawler'] = 'MercredifictionCrawler'
@@ -14,6 +16,19 @@ environ['MercredifictionCrawler'] = 'MercredifictionCrawler'
 from models import Toot, Account, Instance, save
 from const import GET_TAG, MAX_ID, SINCE_ID, TOOT_LIMIT
 from config import TAGS
+
+
+# from django validator
+URL_REGEX = re.compile(
+    r'^(?:http|ftp)s?://'  # http:// or https://
+    r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domain...  # noqa
+    r'localhost|'  # localhost...
+    r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # ...or ip
+    r'(?::\d+)?'  # optional port
+    r'(?:/?|[/?]\S+)$', re.IGNORECASE
+)
+
+USERNAME_REGEX = re.compile('''^[a-zA-Z0-9_]+$''')
 
 
 def main():
@@ -96,14 +111,38 @@ def get_toots(instance, since_id=None, max_id=None):
                            creation_date=creation_date,
                            sensitive=toot['sensitive'],
                            account=account,
-                           content=toot['content'],
+                           content=to_text(toot['content']),
                            instance=instance,
-                           url=toot['url'])
+                           url=validate_url(toot['url']))
             save(db_toot)
+
+
+def to_text(html):
+    parser = HTML2Text()
+    parser.wrap_links = False
+    parser.skip_internal_links = True
+    parser.inline_links = True
+    parser.ignore_anchors = True
+    parser.ignore_images = True
+    parser.ignore_emphasis = True
+    parser.ignore_links = True
+    text = parser.handle(html)
+    text = text.replace('\n', '<br/>')
+    text = text.replace('\\', '')
+    return text
+
+
+def validate_url(url):
+    if URL_REGEX.match(url):
+        return url
+    else:
+        return ''
 
 
 def save_account(instance, content):
     username = content['username']
+    if not USERNAME_REGEX.match(username):
+        username = '[invalid_username]'
     domain = instance.domain
     acct = "@" + username + "@" + domain
     if Account.query.filter_by(username=acct).count() != 0:
@@ -113,11 +152,11 @@ def save_account(instance, content):
                                           "%Y-%m-%dT%H:%M:%S.%fZ")
         account = Account(mastodon_id=content['id'],
                           username=acct,
-                          display_name=content['display_name'],
+                          display_name=to_text(content['display_name']),
                           creation_date=creation_date,
-                          note=content['note'],
-                          url=content['url'],
-                          avatar=content['avatar'],
+                          note=to_text(content['note']),
+                          url=validate_url(content['url']),
+                          avatar=validate_url(content['avatar']),
                           instance=instance)
         save(account)
         return account

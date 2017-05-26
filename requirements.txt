@@ -1,4 +1,4 @@
 flask
 Flask-SQLAlchemy
-requests
+html2text
 request[security]
