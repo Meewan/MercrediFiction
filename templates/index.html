@@ -71,7 +71,7 @@
               {{ toot.creation_date.strftime("%d/%m/%Y - %H:%M:%S")}}
             </span>
           </div>
-          <div class="content">
+          <div class="content" onclick="window.location = '{{toot.url}}'">
             {{toot.content|safe}}
           </div>
         </div>
