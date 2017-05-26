@@ -111,13 +111,14 @@ def get_toots(instance, since_id=None, max_id=None):
                            creation_date=creation_date,
                            sensitive=toot['sensitive'],
                            account=account,
-                           content=to_text(toot['content']),
+                           content=to_text(toot['content'], rehtml=True),
                            instance=instance,
-                           url=validate_url(toot['url']))
+                           url=validate_url(toot['url']),
+                           blacklisted=False)
             save(db_toot)
 
 
-def to_text(html):
+def to_text(html, rehtml=False):
     parser = HTML2Text()
     parser.wrap_links = False
     parser.skip_internal_links = True
@@ -127,8 +128,10 @@ def to_text(html):
     parser.ignore_emphasis = True
     parser.ignore_links = True
     text = parser.handle(html)
-    text = text.replace('\n', '<br/>')
-    text = text.replace('\\', '')
+    text = text.strip(' \t\n\r')
+    if rehtml:
+        text = text.replace('\n', '<br/>')
+        text = text.replace('\\', '')
     return text
 
 
@@ -157,7 +160,8 @@ def save_account(instance, content):
                           note=to_text(content['note']),
                           url=validate_url(content['url']),
                           avatar=validate_url(content['avatar']),
-                          instance=instance)
+                          instance=instance,
+                          blacklisted=False)
         save(account)
         return account
 
@@ -166,7 +170,8 @@ def add_domain_to_db(domain):
     if not Instance.query.filter_by(domain=domain).count():
         instance = Instance(creation_date=datetime.now(),
                             domain=domain,
-                            lock=False)
+                            lock=False,
+                            blacklisted=False)
         save(instance)
 
 

@@ -10,6 +10,7 @@ class Toot(db.Model):
     url = db.Column(db.String(4095))
     account_id = db.Column(db.Integer, db.ForeignKey('account.id'))
     instance_id = db.Column(db.Integer, db.ForeignKey('instance.id'))
+    blacklisted = db.Column(db.Boolean)
 
 
 class Account(db.Model):
@@ -23,6 +24,7 @@ class Account(db.Model):
     avatar = db.Column(db.String(4095))
     instance_id = db.Column(db.Integer, db.ForeignKey('instance.id'))
     toots = db.relationship('Toot', backref='account', lazy='dynamic')
+    blacklisted = db.Column(db.Boolean)
 
 
 class Instance(db.Model):
@@ -32,6 +34,7 @@ class Instance(db.Model):
     toots = db.relationship('Toot', backref='instance', lazy='dynamic')
     accounts = db.relationship('Account', backref='instance', lazy='dynamic')
     lock = db.Column(db.Boolean)
+    blacklisted = db.Column(db.Boolean)
 
 
 class Telemetry(db.Model):
@@ -39,6 +42,7 @@ class Telemetry(db.Model):
     creation_date = db.Column(db.DateTime)
     ip = db.Column(db.String(32))
     referrer = db.Column(db.String(4096))
+
 
 def save(obj):
     db.session.add(obj)

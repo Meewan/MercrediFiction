@@ -4,6 +4,7 @@ from hashlib import md5
 
 from flask import Flask, render_template, request
 from sqlalchemy import desc
+from sqlalchemy.orm import aliased
 from flask_sqlalchemy import SQLAlchemy
 
 import config
@@ -35,8 +36,13 @@ def show_entries():
     offset = page * limit
 
     toots, count, count_all = get_toots(offset, limit)
-    accounts = Account.query.order_by(Account.username).all()
-    instances = Instance.query.order_by(Instance.domain).all()
+    accounts = Account.query.order_by(Account.username)
+    instances = Instance.query.order_by(Instance.domain)
+    blacklist_status = True if request.args.get('blacklisted', None) else False
+
+    if request.args.get('blacklisted') != 'ignore':
+        accounts = accounts.filter(Account.blacklisted == blacklist_status)
+        instances = instances.filter(Instance.blacklisted == blacklist_status)
 
     pagination = {'page': page + 1,
                   'limit': limit}
@@ -63,11 +69,15 @@ def show_entries():
 
 def get_toots(offset, limit):
     toots = Toot.query
+    joined_account = False
+    joined_instance = False
     if request.args.get('author', None):
+        joined_account = True
         toots = toots.join(Account, Toot.account)
         toots = toots.filter(Account.username == request.args.get('author'))
 
     if request.args.get('instance', None):
+        joined_instance = True
         toots = toots.join(Instance, Toot.instance)
         toots = toots.filter(Instance.domain == request.args.get('instance'))
 
@@ -88,6 +98,17 @@ def get_toots(offset, limit):
     if request.args.get('search'):
         search_string = "%" + request.args.get("search") + "%"
         toots = toots.filter(Toot.content.like(search_string))
+
+    blacklist_status = True if request.args.get('blacklisted', None) else False
+
+    if request.args.get('blacklisted') != 'ignore':
+        toots = toots.filter(Toot.blacklisted == blacklist_status)
+        if not joined_account:
+            toots = toots.join(Account, Toot.account)
+        toots = toots.filter(Account.blacklisted == blacklist_status)
+        if not joined_instance:
+            toots = toots.join(Instance, Toot.instance)
+        toots = toots.filter(Account.blacklisted == blacklist_status)
 
     toots = toots.order_by(desc(Toot.creation_date))
     count_all = toots.count()
