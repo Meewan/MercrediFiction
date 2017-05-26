@@ -1,0 +1,92 @@
+<!doctype html>
+<head>
+  <title>#MercrediFiction</title>
+  <style>
+    body{
+      background-color:#eee;
+    }
+    a{
+      color: #555;
+      text-decoration:none;
+    }
+    .float{
+      float:right;
+    }
+    .page{
+      width:800px;
+      margin:auto;
+    }
+    .author{
+      width:140px;
+      height:140px;
+    }
+    .right{
+      width:650px;
+      padding-left:140px;
+      min-height:125px;
+      background-repeat: no-repeat;
+      background-position:8px 3px;
+    }
+    .toot{
+      min-height: 121px;
+      background-color:#fff;
+      margin-top:16px;
+      margin-bottom: 16px;
+      border-radius:5px;
+      padding-top:5px;
+      padding-bottom:5px;
+    }
+    .id-author{
+      border-color:#eee;
+      border-width:0 0 1px  0;
+      border-style: solid;
+      padding-bottom:3px;
+    }
+    .content{
+      padding-left:5px;
+    }
+    .navigation{
+      text-align:center;
+    }
+    .previous{
+      margin-right:20px;
+    }
+    .next{
+      margin-left:20px;
+    }
+  </style>
+</head>
+<body>
+  <div class=page>
+    {% for toot in toots %}
+      <div class="toot">
+        <div class="right" data-link="{{toot.url}}" style="background-image:url({{toot.account.avatar}})">
+          <div class="id-author">
+            {% if toot.account.display_name %}
+              {{toot.account.display_name}} (<a href="{{toot.account.url}}">{{ toot.account.username }}</a>)
+            {% else %}
+              <a href="{{toot.account.url}}">{{ toot.account.username }}</a>
+            {% endif %}
+            <span class="float">
+              {{ toot.creation_date.strftime("%d/%m/%Y - %H:%M:%S")}}
+            </span>
+          </div>
+          <div class="content">
+            {{toot.content|safe}}
+          </div>
+        </div>
+        <div class=social>
+        </div>
+      </div>
+    {% endfor %}
+    <div class="navigation">
+      {% if pagination.previous %}
+        <span class="previous"><a href="{{ pagination.previous }}">← Précédent</a></span>
+      {% endif %}
+      {{pagination.page}}
+      {% if pagination.next %}
+        <span class="next"><a href="{{ pagination.next }}">Suivant →</a></span>
+      {% endif %}
+    </div>
+  </div>
+</body>

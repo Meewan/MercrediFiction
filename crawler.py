@@ -1,5 +1,5 @@
-import re
 import json
+from os import environ
 from datetime import datetime
 from urlparse import urlparse
 from threading import Thread
@@ -8,10 +8,10 @@ import requests
 from requests.exceptions import ConnectionError, Timeout
 from sqlalchemy import desc
 
-from models.toot import Toot
-from models.instance import Instance
-from models.account import Account
-from models.base import save
+environ['MercredifictionCrawler'] = 'MercredifictionCrawler'
+
+
+from models import Toot, Account, Instance, save
 from const import GET_TAG, MAX_ID, SINCE_ID, TOOT_LIMIT
 from config import TAGS
 
@@ -19,8 +19,8 @@ from config import TAGS
 def main():
     instances = Instance.query.all()
 
-    # creating threads
-    threads = []
+    # creating thread
+s    threads = []
     for instance in instances:
         threads.append(Thread(target=crawl,
                               args=(instance.id, )))
@@ -96,26 +96,14 @@ def get_toots(instance, since_id=None, max_id=None):
                            creation_date=creation_date,
                            sensitive=toot['sensitive'],
                            account=account,
-                           content=filter_content(toot['content']),
-                           instance=instance)
+                           content=toot['content'],
+                           instance=instance,
+                           url=toot['url'])
             save(db_toot)
 
 
-def filter_content(content):
-    # remove <p> tags
-    result = re.sub("<p>(.*)</p>", r"\1", content)
-    # replace links by url bbcode
-    result = re.sub("<a href=(?P<quote>'|\")(.*?)(?P=quote)>(.*?)</a>",
-                    r"""[url="\2"]\3[/url]""", result)
-    # remove span 3 times to be sure to remove all span
-    result = re.sub("<span(.*?)>(.*?)</span>", r"\2", result)
-    result = re.sub("<span(.*?)>(.*?)</span>", r"\2", result)
-    result = re.sub("<span(.*?)>(.*?)</span>", r"\2", result)
-    return result
-
-
 def save_account(instance, content):
-    username = filter_content(content['username'])
+    username = content['username']
     domain = instance.domain
     acct = "@" + username + "@" + domain
     if Account.query.filter_by(username=acct).count() != 0:
@@ -125,9 +113,9 @@ def save_account(instance, content):
                                           "%Y-%m-%dT%H:%M:%S.%fZ")
         account = Account(mastodon_id=content['id'],
                           username=acct,
-                          display_name=filter_content(content['display_name']),
+                          display_name=content['display_name'],
                           creation_date=creation_date,
-                          note=filter_content(content['note']),
+                          note=content['note'],
                           url=content['url'],
                           avatar=content['avatar'],
                           instance=instance)
