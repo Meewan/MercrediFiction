@@ -34,6 +34,25 @@ def show_entries():
     limit = int(request.args.get("limit", "10"))
     offset = page * limit
 
+    toots, count = get_toots(offset, limit)
+
+    pagination = {'page': page + 1}
+    pagination['next'] = "/?page=%s&" % (page + 1)
+    pagination['previous'] = "/?page=%s&" % (page - 1)
+    for key, value in request.args.iteritems():
+        if not key == "page":
+            pagination['next'] += "&%s=%s" % (key, value)
+            pagination['previous'] += "&%s=%s" % (key, value)
+
+    if count < limit:
+        pagination.pop('next')
+    if page == 0:
+        pagination.pop('previous')
+
+    return render_template('index.html', toots=toots, pagination=pagination)
+
+
+def get_toots(offset, limit):
     toots = Toot.query
     if 'author' in request.args:
         toots = toots.join(Account, Toot.account)
@@ -63,20 +82,7 @@ def show_entries():
 
     toots = toots.order_by(desc(Toot.creation_date))
     toots = toots.offset(offset).limit(limit)
-    toots_count = toots.count()
+    count = toots.count()
     toots = toots.all()
 
-    pagination = {'page': page + 1}
-    pagination['next'] = "/?page=%s&" % (page + 1)
-    pagination['previous'] = "/?page=%s&" % (page - 1)
-    for key, value in request.args.iteritems():
-        if not key == "page":
-            pagination['next'] += "&%s=%s" % (key, value)
-            pagination['previous'] += "&%s=%s" % (key, value)
-
-    if toots_count < limit:
-        pagination.pop('next')
-    if page == 0:
-        pagination.pop('previous')
-
-    return render_template('index.html', toots=toots, pagination=pagination)
+    return toots, count
