@@ -57,6 +57,10 @@ def show_entries():
         except ValueError:
             pass
 
+    if 'search' in request.args:
+        search_string = "%" + request.args.get("search") + "%"
+        toots = toots.filter(Toot.content.like(search_string))
+
     toots = toots.order_by(desc(Toot.creation_date))
     toots = toots.offset(offset).limit(limit)
     toots_count = toots.count()
