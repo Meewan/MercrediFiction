@@ -43,6 +43,20 @@ def show_entries():
         toots = toots.join(Instance, Toot.instance)
         toots = toots.filter(Instance.domain == request.args.get('instance'))
 
+    if 'from_date' in request.args:
+        try:
+            date = datetime.strptime(request.args.get('from_date'), "%Y%m%d")
+            toots = toots.filter(Toot.creation_date >= date)
+        except ValueError:
+            pass
+
+    if 'to_date' in request.args:
+        try:
+            date = datetime.strptime(request.args.get('to_date'), "%Y%m%d")
+            toots = toots.filter(Toot.creation_date <= date)
+        except ValueError:
+            pass
+
     toots = toots.order_by(desc(Toot.creation_date))
     toots = toots.offset(offset).limit(limit)
     toots_count = toots.count()
