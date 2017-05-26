@@ -19,8 +19,8 @@ from config import TAGS
 def main():
     instances = Instance.query.all()
 
-    # creating thread
-s    threads = []
+    # creating threads
+    threads = []
     for instance in instances:
         threads.append(Thread(target=crawl,
                               args=(instance.id, )))
