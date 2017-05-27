@@ -116,3 +116,30 @@ a:hover {
 footer {
   text-align: center;
 }
+
+@media all and (max-width: 700px) {
+  header > div {
+    padding: 100px 10px;
+  }
+  header > form {
+    padding: 20px;
+  }
+
+  form div {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  form div input {
+    width: 100%;
+  }
+
+  main {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .toot img {
+    display: none;
+  }
+}
