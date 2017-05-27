@@ -1,0 +1,118 @@
+html, body {
+  margin: 0px;
+  padding: 0px;
+  background: #f5f5f5;
+  font-family: 'Open Sans', 'Roboto', 'Helvetica Neue', 'Segoe UI', 'Ubuntu', sans-serif;
+}
+
+header > div {
+  padding: 150px 20%;
+  background: url('https://images.unsplash.com/photo-1473186505569-9c61870c11f9?w=1080&h=720');
+  background-size: cover;
+  text-shadow: 0px 0px 1px white;
+  color: white;
+  text-align: center;
+}
+
+header > form {
+  background: white;
+  box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.25);
+  padding: 20px 20%;
+}
+
+form div {
+  width: 100%;
+  margin: 10px 0px;
+  display: flex;
+  align-items: center;
+}
+
+form div label {
+  width: 10%;
+}
+
+form div input:not([type=checkbox]) {
+  flex: 1;
+  border: 2px solid #ebebeb;
+  border-radius: 3px;
+  padding: 5px;
+  background: white;
+}
+
+form input[type=submit] {
+  display: block;
+  width: 20%;
+  margin: 20px auto;
+  border: none;
+  background: #ff715b;
+  padding: 10px;
+  border-radius: 3px;
+  color: white;
+  cursor: pointer;
+}
+
+main {
+  max-width: 60%;
+  margin: 100px auto;
+}
+
+nav {
+  text-align: center;
+  margin: 40px auto;
+}
+
+.toots {
+  background: white;
+  border-radius: 3px;
+  box-shadow: 0px 0px 30px rgba(0, 0, 0, 0.25);
+  padding: 10px;
+}
+
+.toot {
+  display: flex;
+  flex-direction: row;
+  padding: 10px;
+}
+
+.toot > div {
+  flex: 1;
+}
+
+.toot img {
+  border-radius: 100%;
+  width: 100px;
+  height: 100px;
+  margin-right: 20px;
+}
+
+.toot + .toot {
+  border-top: 2px solid #f5f5f5;
+}
+
+.toot .author {
+  font-weight: bold;
+  margin: auto auto 10px;
+}
+
+a, a:visited {
+  color: #ff715b;
+  text-decoration: none;
+  transition: all 0.25s ease-in;
+}
+
+a:hover {
+  text-shadow: 0px 0px 1px rgba(255, 113, 91, 0.5);
+}
+
+.toot .date {
+  float: right;
+  font-weight: lighter;
+}
+
+.toot .content {
+  cursor: pointer;
+}
+
+footer {
+  text-align: center;
+}

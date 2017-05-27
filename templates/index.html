@@ -1,115 +1,20 @@
-<!doctype html>
+<!DOCTYPE html>
 <head>
+  <meta charset="utf-8">
   <title>#MercrediFiction</title>
-  <style>
-    body{
-      background-color:#eee;
-    }
-    a{
-      color: #555;
-      text-decoration:none;
-    }
-    .float{
-      float:right;
-    }
-    .page{
-      width:800px;
-      margin:auto;
-      margin-top: 55px;
-    }
-    .author{
-      width:140px;
-      height:140px;
-    }
-    .right{
-      width:650px;
-      padding-left:140px;
-      min-height:125px;
-      background-repeat: no-repeat;
-      background-position:8px 3px;
-      background-size: 120px;
-    }
-    .toot{
-      min-height: 121px;
-      background-color:#fff;
-      margin-top:16px;
-      margin-bottom: 16px;
-      border-radius:5px;
-      padding-top:5px;
-      padding-bottom:5px;
-    }
-    .id-author{
-      border-color:#eee;
-      border-width:0 0 1px  0;
-      border-style: solid;
-      padding-bottom:3px;
-    }
-    .content{
-      padding-left:5px;
-    }
-    .navigation{
-      text-align:center;
-    }
-    .previous{
-      margin-right:20px;
-    }
-    .next{
-      margin-left:20px;
-    }
-    .header{
-      width:800px;
-      height:75px;
-      margin: auto;
-    }
-    .search{
-      display:inline-block;
-    }
-    .search-author{
-       width:220px;
-    }
-    .instance{
-      width:150px;
-      margin-left:20px;
-    }
-    .search-content{
-      margin-left:20px;
-      width:240px;
-    }
-    .search-content-input{
-      width:210px !important;
-    }
-    .search-limit{
-      width:40px;
-      margin:10px;
-    }
-    .search input{
-      width:100%;
-    }
-    .footer{
-      width:100%;
-      text-align:center;
-      margin-top: 10px;
-      font-size: 0.9em;
-    }
-    .logo{
-      width: 100%;
-      font-size: 3em;
-      height: 70px;
-      text-align:center;
-    }
-    input[type=checkbox]{
-      width:13px;
-    }
-  </style>
+  <link rel="stylesheet" href="/static/main.css">
 </head>
 <body>
-  <div class="header">
-    <div class="logo">
-      <a href="/">#MercrediFiction</a>
+  <header>
+    <div class="banner">
+      <h1>#MercrediFiction</h1>
+      <p>Chaque mercredi, les mastonautes se réunissent autour du hashtag #Mercredifiction pour se raconter les histoires qu'ils inventent.</p>
+      <p>Pour apparaître ici, postez simplement un pouet avec ce hashtag mercredi prochain !</p>
     </div>
     <form method="GET" action="/">
+      <h2>Chercher une histoire</h2>
       <div class="search search-author">
-        <label for="author"> Auteur </label>
+        <label for="author">Auteur</label>
         <input name="author" list="author" autocomplete="off" value="{{request.args.author}}"/>
         <datalist id="author">
           {% for account in accounts %}
@@ -127,10 +32,12 @@
         </datalist>
       </div>
       <div class="search search-content">
-        <label for="fullword" class="float">Mot complet</label>
         <label for="search">Contenu</label>
         <input name="search" class="search-content-input" value="{{request.args.search}}"/>
-        <input name="fullword" type="checkbox" {%if request.args.fullword %}checked=""{%endif%}>
+      </div>
+      <div class="search search-fullword">
+        <label for="fullword" class="float">Mot complet</label>
+        <input name="fullword" type="checkbox" {%if request.args.fullword %}checked{%endif%}>
       </div>
       <div class="search search-limit">
         <label for="limit">Nombre</label>
@@ -138,51 +45,52 @@
       </div>
       <input type="submit" value="Chercher">
     </form>
-  </div>
-  <div class=page>
-    <div class="navigation">
+  </header>
+  <main>
+    <nav>
       {% if pagination.previous %}
         <span class="previous"><a href="{{ pagination.previous|safe }}">← Précédent</a></span>
       {% endif %}
-      {{ pagination.page }} / {{ pagination.page_count }}
+      Page {{ pagination.page }} sur {{ pagination.page_count }}
       {% if pagination.next %}
         <span class="next"><a href="{{ pagination.next|safe }}">Suivant →</a></span>
       {% endif %}
-    </div>
-    {% for toot in toots %}
-      <div class="toot">
-        <div class="right" data-link="{{toot.url}}" style="background-image:url({{toot.account.avatar}})">
-          <div class="id-author">
-            {% if toot.account.display_name %}
-              {{toot.account.display_name}} (<a href="{{toot.account.url}}">{{ toot.account.username }}</a>)
-            {% else %}
-              <a href="{{toot.account.url}}">{{ toot.account.username }}</a>
-            {% endif %}
-            <span class="float">
-              {{ toot.creation_date.strftime("%d/%m/%Y - %H:%M:%S")}}
-            </span>
-          </div>
-          <div class="content" onclick="window.location = '{{toot.url}}'">
-            {{toot.content|safe}}
+    </nav>
+    <div class="toots">
+      {% for toot in toots %}
+        <div class="toot">
+          <img src="{{toot.account.avatar}}" alt="{{toot.account.url}}">
+          <div data-link="{{toot.url}}">
+            <div class="author">
+              {% if toot.account.display_name %}
+                {{toot.account.display_name}} &mdash; <a href="{{toot.account.url}}">{{ toot.account.username }}</a>
+              {% else %}
+                <a href="{{toot.account.url}}">{{ toot.account.username }}</a>
+              {% endif %}
+              <span class="date">
+                {{ toot.creation_date.strftime("Le %d/%m/%Y, &agrave; %H:%M")|safe }}
+              </span>
+            </div>
+            <div class="content" onclick="window.location = '{{toot.url}}'">
+              {{toot.content|safe}}
+            </div>
           </div>
         </div>
-        <div class=social>
-        </div>
+      {% endfor %}
       </div>
-    {% endfor %}
-    <div class="navigation">
+    <nav>
       {% if pagination.previous %}
         <span class="previous"><a href="{{ pagination.previous|safe }}">← Précédent</a></span>
       {% endif %}
-      {{ pagination.page }} / {{ pagination.page_count }}
+      Page {{ pagination.page }} sur {{ pagination.page_count }}
       {% if pagination.next %}
         <span class="next"><a href="{{ pagination.next|safe }}">Suivant →</a></span>
       {% endif %}
-    </div>
-    <div class="footer">
-      Sources disponibles sur <a href="https://github.com/Meewan/MercrediFiction">github</a>
-    </div>
-  </div>
+    </nav>
+    <footer>
+      Sources disponibles sur <a href="https://github.com/Meewan/MercrediFiction">GitHub</a>
+    </footer>
+  </main>
   <script>
     document.onkeydown = function(event){
       if(event.keyCode === 37){
