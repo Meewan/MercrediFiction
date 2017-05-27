@@ -3,7 +3,7 @@ import json
 from os import environ
 from datetime import datetime
 from urlparse import urlparse
-from threading import Thread
+from threading import Thread, Lock
 
 import requests
 from requests.exceptions import ConnectionError, Timeout
@@ -29,6 +29,8 @@ URL_REGEX = re.compile(
 )
 
 USERNAME_REGEX = re.compile('''^[a-zA-Z0-9_]+$''')
+
+INSTANCE_LOCK = Lock()
 
 
 def main():
@@ -167,12 +169,16 @@ def save_account(instance, content):
 
 
 def add_domain_to_db(domain):
-    if not Instance.query.filter_by(domain=domain).count():
-        instance = Instance(creation_date=datetime.now(),
-                            domain=domain,
-                            lock=False,
-                            blacklisted=False)
-        save(instance)
+    try:
+        INSTANCE_LOCK.acquire()
+        if not Instance.query.filter_by(domain=domain).count():
+            instance = Instance(creation_date=datetime.now(),
+                                domain=domain,
+                                lock=False,
+                                blacklisted=False)
+            save(instance)
+    finally:
+        INSTANCE_LOCK.release()
 
 
 if __name__ == "__main__":
