@@ -7,7 +7,7 @@ html, body {
 
 header > div {
   padding: 150px 20%;
-  background: url('https://images.unsplash.com/photo-1473186505569-9c61870c11f9?w=1080&h=720');
+  background: url('/static/img/background_header.jpg');
   background-size: cover;
   text-shadow: 0px 0px 1px white;
   color: white;

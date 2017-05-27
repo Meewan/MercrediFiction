@@ -2,9 +2,8 @@ from os import environ
 from datetime import datetime
 from hashlib import md5
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, send_from_directory
 from sqlalchemy import desc
-from sqlalchemy.orm import aliased
 from flask_sqlalchemy import SQLAlchemy
 
 import config
@@ -66,9 +65,11 @@ def show_entries():
                            instances=instances,
                            pagination=pagination)
 
+
 @app.route('/static/<path:path>')
 def serve_static(path):
     return send_from_directory('static', path)
+
 
 def get_toots(offset, limit):
     toots = Toot.query
