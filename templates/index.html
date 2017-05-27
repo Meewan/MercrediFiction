@@ -80,6 +80,12 @@
     .search input{
       width:100%;
     }
+    .footer{
+      width:100%;
+      text-align:center;
+      margin-top: 10px;
+      font-size: 0.9em;
+    }
   </style>
 </head>
 <body>
@@ -153,6 +159,9 @@
       {% if pagination.next %}
         <span class="next"><a href="{{ pagination.next|safe }}">Suivant →</a></span>
       {% endif %}
+    </div>
+    <div class="footer">
+      Sources disponibles sur <a href="https://github.com/Meewan/MercrediFiction">github</a>
     </div>
   </div>
   <script>
