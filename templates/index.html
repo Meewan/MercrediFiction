@@ -73,6 +73,10 @@
     }
     .search-content{
       margin-left:20px;
+      width:240px;
+    }
+    .search-content-input{
+      width:210px !important;
     }
     .search-limit{
       width:40px;
@@ -92,6 +96,9 @@
       font-size: 3em;
       height: 70px;
       text-align:center;
+    }
+    input[type=checkbox]{
+      width:13px;
     }
   </style>
 </head>
@@ -120,8 +127,10 @@
         </datalist>
       </div>
       <div class="search search-content">
+        <label for="fullword" class="float">Mot complet</label>
         <label for="search">Contenu</label>
-        <input name="search" value="{{search}}"/>
+        <input name="search" class="search-content-input" value="{{request.args.search}}"/>
+        <input name="fullword" type="checkbox" {%if request.args.fullword %}checked=""{%endif%}>
       </div>
       <div class="search search-limit">
         <label for="limit">Nombre</label>

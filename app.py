@@ -96,8 +96,12 @@ def get_toots(offset, limit):
             pass
 
     if request.args.get('search'):
-        search_string = "%" + request.args.get("search") + "%"
-        toots = toots.filter(Toot.content.like(search_string))
+        if request.args.get('fullword'):
+            search = "(^| )%s( |$)" % (request.args.get("search"),)
+            toots = toots.filter(Toot.content.op('REGEXP')(search))
+        else:
+            search_string = "%" + request.args.get("search") + "%"
+            toots = toots.filter(Toot.content.like(search_string))
 
     blacklist_status = True if request.args.get('blacklisted', None) else False
 
