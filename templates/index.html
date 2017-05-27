@@ -103,7 +103,7 @@
     <form method="GET" action="/">
       <div class="search search-author">
         <label for="author"> Auteur </label>
-        <input name="author" list="author" autocomplete="off"/>
+        <input name="author" list="author" autocomplete="off" value="{{request.args.author}}"/>
         <datalist id="author">
           {% for account in accounts %}
             <option value="{{ account.username }}"/>
@@ -112,7 +112,7 @@
       </div>
       <div class="search instance">
         <label for="instance">Instance</label>
-        <input name="instance" list="instance" autocomplete="off"/>
+        <input name="instance" list="instance" autocomplete="off" value="{{request.args.instance}}"/>
         <datalist id="instance">
           {% for instance in instances %}
             <option value="{{ instance.domain }}"/>
@@ -121,7 +121,7 @@
       </div>
       <div class="search search-content">
         <label for="search">Contenu</label>
-        <input name="search"/>
+        <input name="search" value="{{search}}"/>
       </div>
       <div class="search search-limit">
         <label for="limit">Nombre</label>
