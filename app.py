@@ -66,6 +66,9 @@ def show_entries():
                            instances=instances,
                            pagination=pagination)
 
+@app.route('/static/<path:path>')
+def serve_static(path):
+    return send_from_directory('static', path)
 
 def get_toots(offset, limit):
     toots = Toot.query
