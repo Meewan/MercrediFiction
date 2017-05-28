@@ -1,8 +1,9 @@
-from os import environ, path
+from os import environ, path, listdir, remove
+from time import time
 from datetime import datetime
 from hashlib import md5
 
-from flask import Flask, render_template, request, send_from_directory, redirect
+from flask import Flask, render_template, request, send_from_directory
 from sqlalchemy import desc
 from flask_sqlalchemy import SQLAlchemy
 from ebooklib import epub
@@ -101,9 +102,11 @@ def create_epub():
 
     book.spine = ['nav', chapter]
 
-    epub_path = path.join('static', 'mercredi-fiction.epub')
+    clean_epub_directory()
+    epub_name = str(time()) + '.epub'
+    epub_path = path.join(config.EPUB_DIRECTORY, epub_name)
     epub.write_epub(epub_path, book)
-    return redirect(epub_path)
+    return send_from_directory(config.EPUB_DIRECTORY, epub_name)
 
 
 def get_toots(offset=None, limit=None):
@@ -218,3 +221,25 @@ def get_accounts():
     accounts = accounts.all()
 
     return accounts, count, count_all
+
+
+def clean_epub_directory():
+    epubs = listdir(config.EPUB_DIRECTORY)
+    if len(epubs) <= config.MAX_EPUB:
+        return
+
+    epubs.sort()
+
+    number_to_delete = len(epubs) - config.MAX_EPUB + 2
+    deleted = 0
+    for t in epubs:
+        f = path.join(config.EPUB_DIRECTORY, t)
+        if not path.isfile(f):
+            continue
+        if deleted >= number_to_delete:
+            break
+        try:
+            remove(f)
+            deleted += 1
+        except OSError:
+            pass
