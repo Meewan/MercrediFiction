@@ -30,12 +30,20 @@ def telemetry(function):
 
 @app.route('/')
 @telemetry
-def show_entries():
+def index_page():
+    if request.args.get('epub'):
+        return create_epub()
+    else:
+        return create_page()
+
+
+def create_page():
     page = int(request.args.get("page", "0"))
     limit = int(request.args.get("limit", "10"))
     offset = page * limit
 
     toots, count, count_all = get_toots(offset, limit)
+
     accounts = Account.query.order_by(Account.username)
     instances = Instance.query.order_by(Instance.domain)
     blacklist_status = True if request.args.get('blacklisted', None) else False
@@ -66,10 +74,10 @@ def show_entries():
                            instances=instances,
                            pagination=pagination)
 
-@app.route('/epub')
+
 def create_epub():
-    accounts = Account.query.order_by(Account.username)
-    toots = Toot.query.order_by(Toot.creation_date)
+    toots, _, _ = get_toots()
+    accounts, _, _ = get_accounts()
     book = epub.EpubBook()
 
     # add metadata
@@ -80,11 +88,13 @@ def create_epub():
     for account in accounts:
         book.add_author(account.username)
 
-    chapter = epub.EpubHtml(title='Toutes les histoires', file_name='index.xhtml', lang='fr')
+    chapter = epub.EpubHtml(title='Toutes les histoires',
+                            file_name='index.xhtml',
+                            lang='fr')
     chapter.content = render_template('epub.html', toots=toots)
     book.add_item(chapter)
 
-    book.toc = (epub.Link('index.xhtml', 'Toutes les histoires', 'histoires'), )
+    book.toc = (epub.Link('index.xhtml', 'Toutes les histoires', 'histoires'),)
 
     book.add_item(epub.EpubNcx())
     book.add_item(epub.EpubNav())
@@ -92,15 +102,11 @@ def create_epub():
     book.spine = ['nav', chapter]
 
     epub_path = path.join('static', 'mercredi-fiction.epub')
-    epub.write_epub(epub_path, book, {})
+    epub.write_epub(epub_path, book)
     return redirect(epub_path)
 
-@app.route('/static/<path:path>')
-def serve_static(path):
-    return send_from_directory('static', path)
 
-
-def get_toots(offset, limit):
+def get_toots(offset=None, limit=None):
     toots = Toot.query
     joined_account = False
     joined_instance = False
@@ -141,16 +147,74 @@ def get_toots(offset, limit):
     if request.args.get('blacklisted') != 'ignore':
         toots = toots.filter(Toot.blacklisted == blacklist_status)
         if not joined_account:
+            joined_account = True
             toots = toots.join(Account, Toot.account)
         toots = toots.filter(Account.blacklisted == blacklist_status)
         if not joined_instance:
+            joined_instance = True
             toots = toots.join(Instance, Toot.instance)
         toots = toots.filter(Account.blacklisted == blacklist_status)
 
     toots = toots.order_by(desc(Toot.creation_date))
     count_all = toots.count()
-    toots = toots.offset(offset).limit(limit)
+    if offset:
+        toots = toots.offset(offset)
+    if limit:
+        toots = toots.limit(limit)
     count = toots.count()
     toots = toots.all()
 
     return toots, count, count_all
+
+
+def get_accounts():
+    accounts = Account.query.join(Toot, Account.toots)
+    joined_instance = False
+
+    if request.args.get('author', None):
+        accounts = accounts.filter_by(username=request.args.get('author'))
+
+    if request.args.get('instance', None):
+        joined_instance = True
+        accounts = accounts.join(Instance, Account.instance)
+        accounts = accounts.filter(
+            Instance.domain == request.args.get('instance')
+        )
+
+    if request.args.get('from_date', None):
+        try:
+            date = datetime.strptime(request.args.get('from_date'), "%Y%m%d")
+            accounts = accounts.filter(Toot.creation_date >= date)
+        except ValueError:
+            pass
+
+    if request.args.get('to_date', None):
+        try:
+            date = datetime.strptime(request.args.get('to_date'), "%Y%m%d")
+            accounts = accounts.filter(Toot.creation_date <= date)
+        except ValueError:
+            pass
+
+    if request.args.get('search'):
+        if request.args.get('fullword'):
+            search = "(^| )%s( |$)" % (request.args.get("search"),)
+            accounts = accounts.filter(Toot.content.op('REGEXP')(search))
+        else:
+            search_string = "%" + request.args.get("search") + "%"
+            accounts = accounts.filter(Toot.content.like(search_string))
+
+    blacklist_status = True if request.args.get('blacklisted', None) else False
+
+    if request.args.get('blacklisted') != 'ignore':
+        accounts = accounts.filter(Toot.blacklisted == blacklist_status)
+        accounts = accounts.filter(Account.blacklisted == blacklist_status)
+        if not joined_instance:
+            accounts = accounts.join(Instance, Toot.instance)
+        accounts = accounts.filter(Account.blacklisted == blacklist_status)
+
+    accounts = accounts.order_by(Account.username)
+    count_all = accounts.count()
+    count = accounts.count()
+    accounts = accounts.all()
+
+    return accounts, count, count_all
