@@ -39,16 +39,27 @@ form div input:not([type=checkbox]) {
   background: white;
 }
 
-form input[type=submit] {
+.btn {
   display: block;
   width: 20%;
   margin: 20px auto;
-  border: none;
-  background: #ff715b;
   padding: 10px;
   border-radius: 3px;
-  color: white;
   cursor: pointer;
+}
+
+.btn.colored {
+  border: none;
+  background: #ff715b;
+  color: white;
+}
+
+.btn.transparent {
+  border: 2px solid white;
+  background: transparent;
+  color: white;
+  width: 40%;
+  margin-top: 75px;
 }
 
 main {

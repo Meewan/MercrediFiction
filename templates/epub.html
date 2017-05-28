@@ -1,0 +1,22 @@
+<html lang="fr">
+  <head>
+  </head>
+  <body>
+    <h1>Toutes les histoires</h1>
+    {% for toot in toots %}
+      <div>
+        <h3>
+          {% if toot.account.display_name %}
+            {{toot.account.display_name}} &mdash; <a href="{{toot.account.url}}">{{ toot.account.username }}</a>
+          {% else %}
+            <a href="{{toot.account.url}}">{{ toot.account.username }}</a>
+          {% endif %}
+          &mdash; {{ toot.creation_date.strftime("Le %d/%m/%Y, &agrave; %H:%M")|safe }}
+        </h3>
+        <p>
+          {{toot.content|safe}}
+        </p>
+      </div>
+    {% endfor %}
+  </body>
+</html>

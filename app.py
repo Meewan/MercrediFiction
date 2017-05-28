@@ -1,10 +1,11 @@
-from os import environ
+from os import environ, path
 from datetime import datetime
 from hashlib import md5
 
-from flask import Flask, render_template, request, send_from_directory
+from flask import Flask, render_template, request, send_from_directory, redirect
 from sqlalchemy import desc
 from flask_sqlalchemy import SQLAlchemy
+from ebooklib import epub
 
 import config
 
@@ -65,6 +66,34 @@ def show_entries():
                            instances=instances,
                            pagination=pagination)
 
+@app.route('/epub')
+def create_epub():
+    accounts = Account.query.order_by(Account.username)
+    toots = Toot.query.order_by(Toot.creation_date)
+    book = epub.EpubBook()
+
+    # add metadata
+    book.set_identifier('mercredi-fiction')
+    book.set_title('#MercrediFiction')
+    book.set_language('fr')
+
+    for account in accounts:
+        book.add_author(account.username)
+
+    chapter = epub.EpubHtml(title='Toutes les histoires', file_name='index.xhtml', lang='fr')
+    chapter.content = render_template('epub.html', toots=toots)
+    book.add_item(chapter)
+
+    book.toc = (epub.Link('index.xhtml', 'Toutes les histoires', 'histoires'), )
+
+    book.add_item(epub.EpubNcx())
+    book.add_item(epub.EpubNav())
+
+    book.spine = ['nav', chapter]
+
+    epub_path = path.join('static', 'mercredi-fiction.epub')
+    epub.write_epub(epub_path, book, {})
+    return redirect(epub_path)
 
 @app.route('/static/<path:path>')
 def serve_static(path):
