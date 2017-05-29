@@ -106,7 +106,9 @@ def create_epub():
     epub_name = str(time()) + '.epub'
     epub_path = path.join(config.EPUB_DIRECTORY, epub_name)
     epub.write_epub(epub_path, book)
-    return send_from_directory(config.EPUB_DIRECTORY, epub_name)
+    response = send_from_directory(config.EPUB_DIRECTORY, epub_name)
+    response.headers['Content-Disposition'] = 'attachment;filename="mercredifiction.epub"'
+    return response
 
 
 def get_toots(offset=None, limit=None):
@@ -175,7 +177,7 @@ def get_accounts():
     joined_instance = False
 
     if request.args.get('author', None):
-        accounts = accounts.filter_by(username=request.args.get('author'))
+        accounts = accounts.filter(Account.username == request.args['author'])
 
     if request.args.get('instance', None):
         joined_instance = True

@@ -10,7 +10,6 @@
       <h1>#MercrediFiction</h1>
       <p>Chaque mercredi, les mastonautes se réunissent autour du hashtag #MercrediFiction pour se raconter les histoires qu'ils inventent.</p>
       <p>Pour apparaître ici, postez simplement un pouet avec ce hashtag mercredi prochain !</p>
-      <a class="btn transparent" href="/epub">Télécharger une compilation des histoires sous forme de livre numérique</a>
     </div>
     <form method="GET" action="/">
       <h2>Chercher une histoire</h2>
@@ -44,7 +43,10 @@
         <label for="limit">Nombre</label>
         <input type="number" name="limit" value="{{pagination.limit}}"/>
       </div>
-      <input class="btn colored" type="submit" value="Chercher">
+      <div class="search-submit">
+        <input class="btn colored" type="submit" name="epub" value="Livre numérique">
+        <input class="btn colored" type="submit" value="Chercher">
+      </div>
     </form>
   </header>
   <main>

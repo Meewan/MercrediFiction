@@ -40,7 +40,6 @@ form div input:not([type=checkbox]) {
 }
 
 .btn {
-  display: block;
   width: 20%;
   margin: 20px auto;
   padding: 10px;
@@ -48,10 +47,19 @@ form div input:not([type=checkbox]) {
   cursor: pointer;
 }
 
+.search-submit{
+  width:50%;
+  margin: auto;
+}
+
 .btn.colored {
   border: none;
   background: #ff715b;
   color: white;
+  width: 40%;
+  display: inline-block;
+  margin-left: 5%;
+  margin-right: 5%;
 }
 
 .btn.transparent {
